@@ -4,11 +4,12 @@ services:
   app:
     image: node:14.16.0-alpine3.13
     ports:
-      - "6080:80"
+      - "6080:3000"
     volumes:
       - ./:/src
+      - "/src/node_modules"
     working_dir: /src
-    command: npm run start:dev
+    command: /bin/sh -c "npm install && npm run prisma migrate deploy && npm run start:dev"
 
   db:
     image: postgres:13

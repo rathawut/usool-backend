@@ -9,3 +9,75 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+model User {
+  id            Int           @default(autoincrement()) @id
+  imageId       Int?
+  idNumber      String?       @db.VarChar(255)
+  displayName   String        @db.VarChar(255)
+  titleName     String?       @db.VarChar(255)
+  firstName     String?       @db.VarChar(255)
+  middleName    String?       @db.VarChar(255)
+  lastName      String?       @db.VarChar(255)
+  birthdate     DateTime?
+  phoneNumber   String?       @db.VarChar(255)
+  email         String?       @db.VarChar(255)
+  address       String?       @db.VarChar(255)
+  note          String?       @db.VarChar(255)
+  status        UserStatus    @default(ACTIVE)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  authPassword  AuthPassword?
+  accessTokens  AccessToken[]
+
+  @@map("user")
+}
+
+model AuthPassword {
+  id          Int         @default(autoincrement()) @id
+  user        User        @relation(fields: [userId], references: [id])
+  userId      Int
+  username    String
+  password    String
+  activeToken String?
+  resetToken  String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("auth_password")
+}
+
+enum AuthStrategy {
+  PASSWORD
+}
+
+enum AccessTokenStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+model AccessToken {
+  id                    Int               @default(autoincrement()) @id
+  user                  User              @relation(fields: [userId], references: [id])
+  userId                Int
+  token                 String
+  authStrategy          AuthStrategy
+  info                  Json?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  fcmRegistrationToken  String?           @db.VarChar(1024)
+  otpNumber             Int?
+  status                AccessTokenStatus @default(ACTIVE)
+
+  @@map("access_token")
+}
