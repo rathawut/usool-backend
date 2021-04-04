@@ -45,10 +45,10 @@ model AuthPassword {
   id          Int         @default(autoincrement()) @id
   user        User        @relation(fields: [userId], references: [id])
   userId      Int
-  username    String
-  password    String
-  activeToken String?
-  resetToken  String?
+  username    String      @db.VarChar(255)
+  password    String      @db.VarChar(255)
+  activeToken String?     @db.VarChar(255)
+  resetToken  String?     @db.VarChar(255)
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -70,7 +70,7 @@ model AccessToken {
   id                    Int               @default(autoincrement()) @id
   user                  User              @relation(fields: [userId], references: [id])
   userId                Int
-  token                 String
+  token                 String            @db.VarChar(255)
   authStrategy          AuthStrategy
   info                  Json?
   createdAt             DateTime          @default(now())

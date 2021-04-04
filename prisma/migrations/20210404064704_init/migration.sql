@@ -33,10 +33,10 @@ CREATE TABLE "user" (
 CREATE TABLE "auth_password" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
-    "username" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "activeToken" TEXT,
-    "resetToken" TEXT,
+    "username" VARCHAR(255) NOT NULL,
+    "password" VARCHAR(255) NOT NULL,
+    "activeToken" VARCHAR(255),
+    "resetToken" VARCHAR(255),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -47,7 +47,7 @@ CREATE TABLE "auth_password" (
 CREATE TABLE "access_token" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
-    "token" TEXT NOT NULL,
+    "token" VARCHAR(255) NOT NULL,
     "authStrategy" "AuthStrategy" NOT NULL,
     "info" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -67,3 +67,10 @@ ALTER TABLE "auth_password" ADD FOREIGN KEY ("userId") REFERENCES "user"("id") O
 
 -- AddForeignKey
 ALTER TABLE "access_token" ADD FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Seeding
+INSERT INTO "user" ("displayName", "updatedAt")
+VALUES ('Super Admin', NOW());
+
+INSERT INTO "auth_password" ("userId", "username", "password", "updatedAt")
+VALUES (1, 'superadmin', '$2b$10$P.37u0Jxt1/4.vKxKuk0.e28nDof5W65XhgoAfr36U.P2BaQK0iHK', NOW());
