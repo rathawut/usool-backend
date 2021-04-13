@@ -15,6 +15,10 @@ describe('App (e2e)', () => {
     await app.init();
   });
 
+  afterAll(async () => {
+    await app.close();
+  });
+
   it('/auth/login (POST)', () => {
     return request(app.getHttpServer()).post('/auth/login').expect(401);
   });

@@ -1,9 +1,9 @@
 import { Controller, UseGuards, Get, Request } from '@nestjs/common';
-import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 export class UserController {
-  @UseGuards(BearerAuthGuard)
+  @UseGuards(AuthGuard())
   @Get('profile')
   async protected(@Request() req) {
     return req.user;

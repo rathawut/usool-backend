@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { UserModule } from '../user/user.module';
 import { PrismaService } from '../prisma.service';
@@ -14,7 +14,7 @@ import { AuthController } from './auth.controller';
     PassportModule.register({
       defaultStrategy: 'bearer',
     }),
-    UserModule,
+    forwardRef(() => UserModule),
   ],
   providers: [
     PrismaService,
@@ -25,6 +25,6 @@ import { AuthController } from './auth.controller';
     AccessTokenService,
   ],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [PassportModule, AuthService],
 })
 export class AuthModule {}
