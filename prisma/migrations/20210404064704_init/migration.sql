@@ -60,7 +60,13 @@ CREATE TABLE "access_token" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "auth_password.username_unique" ON "auth_password"("username");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "auth_password_userId_unique" ON "auth_password"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "access_token_token_unique" ON "access_token"("token");
 
 -- AddForeignKey
 ALTER TABLE "auth_password" ADD FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
