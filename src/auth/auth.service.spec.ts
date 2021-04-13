@@ -3,7 +3,7 @@ import { PassportModule } from '@nestjs/passport';
 import { UserModule } from '../user/user.module';
 import { PrismaService } from '../prisma.service';
 import { LocalStrategy } from './strategies/local.strategy';
-import { AccessTokenStrategy } from './strategies/bearer.strategy';
+import { BearerStrategy } from './strategies/bearer.strategy';
 import { AuthService } from './auth.service';
 import { AuthPasswordService } from './auth-password.service';
 import { AccessTokenService } from './access-token.service';
@@ -22,7 +22,7 @@ describe('AuthService', () => {
       providers: [
         PrismaService,
         LocalStrategy,
-        AccessTokenStrategy,
+        BearerStrategy,
         AuthService,
         AuthPasswordService,
         AccessTokenService,
