@@ -1,15 +1,11 @@
 import * as bcrypt from 'bcrypt';
 import { Injectable } from '@nestjs/common';
-import { AuthPassword, User } from '@prisma/client';
+import { AuthPassword, User, UserStatus } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthPasswordService {
-  constructor(
-    private prisma: PrismaService,
-    private userService: UserService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async validateUserByPassword(
     username: string,
@@ -30,15 +26,21 @@ export class AuthPasswordService {
       return null;
     }
 
-    const user = this.userService.findOne(authPassword.userId);
-
-    return user;
+    return authPassword.user;
   }
 
-  async findByUsername(username: string): Promise<AuthPassword | null> {
-    return this.prisma.authPassword.findUnique({
+  async findByUsername(
+    username: string,
+  ): Promise<(AuthPassword & { user: User }) | null> {
+    return this.prisma.authPassword.findFirst({
       where: {
         username,
+        user: {
+          status: UserStatus.ACTIVE,
+        },
+      },
+      include: {
+        user: true,
       },
     });
   }

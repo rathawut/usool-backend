@@ -1,28 +1,43 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { AuthStrategy, AccessToken, User } from '@prisma/client';
-import { UserService } from '../user/user.service';
+import {
+  AuthStrategy,
+  AccessToken,
+  User,
+  AccessTokenStatus,
+  UserStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class AccessTokenService {
-  constructor(
-    private prisma: PrismaService,
-    private userService: UserService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async validateUserByToken(token: string): Promise<User | null> {
-    const accessToken = await this.prisma.accessToken.findUnique({
-      where: { token },
-    });
+    const accessToken = await this.findByToken(token);
 
     if (!accessToken) {
       return null;
     }
 
-    const user = this.userService.findOne(accessToken.userId);
+    return accessToken.user;
+  }
 
-    return user;
+  async findByToken(
+    token: string,
+  ): Promise<(AccessToken & { user: User }) | null> {
+    return this.prisma.accessToken.findFirst({
+      where: {
+        token,
+        status: AccessTokenStatus.ACTIVE,
+        user: {
+          status: UserStatus.ACTIVE,
+        },
+      },
+      include: {
+        user: true,
+      },
+    });
   }
 
   async generateToken(
@@ -38,16 +53,14 @@ export class AccessTokenService {
     });
   }
 
-  async deactivateToken(token: string): Promise<boolean> {
-    this.prisma.accessToken.update({
+  async deactivateToken(token: string): Promise<void> {
+    await this.prisma.accessToken.update({
       where: {
         token,
       },
       data: {
-        status: 'INACTIVE',
+        status: AccessTokenStatus.INACTIVE,
       },
     });
-
-    return true;
   }
 }

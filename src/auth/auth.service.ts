@@ -14,4 +14,8 @@ export class AuthService {
 
     return { accessToken };
   }
+
+  async logout(token: string): Promise<void> {
+    this.accessTokenService.deactivateToken(token);
+  }
 }
