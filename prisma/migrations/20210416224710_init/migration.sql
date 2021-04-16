@@ -7,6 +7,24 @@ CREATE TYPE "AuthStrategy" AS ENUM ('PASSWORD');
 -- CreateEnum
 CREATE TYPE "AccessTokenStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DELETED');
 
+-- CreateEnum
+CREATE TYPE "ProjectStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DELETED');
+
+-- CreateEnum
+CREATE TYPE "TextStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DELETED');
+
+-- CreateEnum
+CREATE TYPE "TranslationLanguage" AS ENUM ('EN', 'TH');
+
+-- CreateEnum
+CREATE TYPE "TranslationStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DELETED');
+
+-- CreateEnum
+CREATE TYPE "CommentApproval" AS ENUM ('APPROVE', 'REJECT');
+
+-- CreateEnum
+CREATE TYPE "CommentStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DELETED');
+
 -- CreateTable
 CREATE TABLE "user" (
     "id" SERIAL NOT NULL,
@@ -63,7 +81,8 @@ CREATE TABLE "access_token" (
 CREATE TABLE "project" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(255) NOT NULL,
-    "description" TEXT NOT NULL,
+    "description" TEXT,
+    "status" "ProjectStatus" NOT NULL DEFAULT E'ACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdBy" INTEGER NOT NULL,
@@ -76,9 +95,12 @@ CREATE TABLE "project" (
 CREATE TABLE "text" (
     "id" SERIAL NOT NULL,
     "projectId" INTEGER NOT NULL,
-    "page" INTEGER NOT NULL,
-    "sequence" INTEGER NOT NULL,
+    "book" INTEGER,
+    "page" INTEGER,
+    "chapter" INTEGER,
+    "sequence" INTEGER,
     "content" TEXT NOT NULL,
+    "status" "TextStatus" NOT NULL DEFAULT E'ACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdBy" INTEGER NOT NULL,
@@ -91,8 +113,25 @@ CREATE TABLE "text" (
 CREATE TABLE "translation" (
     "id" SERIAL NOT NULL,
     "textId" INTEGER NOT NULL,
+    "refTranslationId" INTEGER,
+    "language" "TranslationLanguage" NOT NULL,
     "content" TEXT NOT NULL,
-    "comment" TEXT NOT NULL,
+    "status" "TranslationStatus" NOT NULL DEFAULT E'ACTIVE',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" INTEGER NOT NULL,
+    "updatedBy" INTEGER NOT NULL,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "comment" (
+    "id" SERIAL NOT NULL,
+    "translationId" INTEGER NOT NULL,
+    "content" TEXT,
+    "approval" "CommentApproval",
+    "status" "CommentStatus" NOT NULL DEFAULT E'ACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdBy" INTEGER NOT NULL,
@@ -138,10 +177,22 @@ ALTER TABLE "text" ADD FOREIGN KEY ("updatedBy") REFERENCES "user"("id") ON DELE
 ALTER TABLE "translation" ADD FOREIGN KEY ("textId") REFERENCES "text"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "translation" ADD FOREIGN KEY ("refTranslationId") REFERENCES "translation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "translation" ADD FOREIGN KEY ("createdBy") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "translation" ADD FOREIGN KEY ("updatedBy") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "comment" ADD FOREIGN KEY ("translationId") REFERENCES "translation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "comment" ADD FOREIGN KEY ("createdBy") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "comment" ADD FOREIGN KEY ("updatedBy") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- Seeding
 INSERT INTO "user" ("displayName", "updatedAt")

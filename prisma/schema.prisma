@@ -47,6 +47,9 @@ model User {
   createdTranslations Translation[] @relation("createdByInTranslation")
   updatedTranslations Translation[] @relation("updatedByInTranslation")
 
+  createdComments Comment[] @relation("createdByInComment")
+  updatedComments Comment[] @relation("updatedByInComment")
+
   @@map("user")
 }
 
@@ -94,10 +97,17 @@ model AccessToken {
   @@map("access_token")
 }
 
+enum ProjectStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
 model Project {
-  id          Int    @id @default(autoincrement())
-  name        String @unique @db.VarChar(255)
-  description String
+  id          Int           @id @default(autoincrement())
+  name        String        @unique @db.VarChar(255)
+  description String?
+  status      ProjectStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -112,12 +122,21 @@ model Project {
   @@map("project")
 }
 
+enum TextStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
 model Text {
-  id        Int    @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   projectId Int
-  page      Int
-  sequence  Int
+  book      Int?
+  page      Int?
+  chapter   Int?
+  sequence  Int?
   content   String
+  status    TextStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -134,21 +153,68 @@ model Text {
   @@map("text")
 }
 
+enum TranslationLanguage {
+  EN
+  TH
+}
+
+enum TranslationStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
 model Translation {
-  id      Int    @id @default(autoincrement())
-  textId  Int
-  content String
-  comment String
+  id               Int                 @id @default(autoincrement())
+  textId           Int
+  refTranslationId Int?
+  language         TranslationLanguage
+  content          String
+  status           TranslationStatus   @default(ACTIVE)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  createdBy        Int
+  updatedBy        Int
+
+  text           Text         @relation(fields: [textId], references: [id])
+  refTranslation Translation? @relation(name: "refTranslationIdInTranslation", fields: [refTranslationId], references: [id])
+
+  creator User @relation(name: "createdByInTranslation", fields: [createdBy], references: [id])
+  updater User @relation(name: "updatedByInTranslation", fields: [updatedBy], references: [id])
+
+  comments     Comment[]
+  translations Translation[] @relation("refTranslationIdInTranslation")
+
+  @@map("translation")
+}
+
+enum CommentApproval {
+  APPROVE
+  REJECT
+}
+
+enum CommentStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+model Comment {
+  id            Int              @id @default(autoincrement())
+  translationId Int
+  content       String?
+  approval      CommentApproval?
+  status        CommentStatus    @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy Int
   updatedBy Int
 
-  text Text @relation(fields: [textId], references: [id])
+  translation Translation @relation(fields: [translationId], references: [id])
 
-  creator User @relation(name: "createdByInTranslation", fields: [createdBy], references: [id])
-  updater User @relation(name: "updatedByInTranslation", fields: [updatedBy], references: [id])
+  creator User @relation(name: "createdByInComment", fields: [createdBy], references: [id])
+  updater User @relation(name: "updatedByInComment", fields: [updatedBy], references: [id])
 
-  @@map("translation")
+  @@map("comment")
 }
