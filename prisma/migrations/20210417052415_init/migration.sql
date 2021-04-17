@@ -274,3 +274,6 @@ VALUES ('Super Admin', NOW());
 
 INSERT INTO "auth_password" ("userId", "username", "password", "updatedAt")
 VALUES (1, 'superadmin', '$2b$10$P.37u0Jxt1/4.vKxKuk0.e28nDof5W65XhgoAfr36U.P2BaQK0iHK', NOW());
+
+INSERT INTO "project_category" ("name", "updatedAt", "createdBy", "updatedBy")
+VALUES ('Default', NOW(), 1, 1);

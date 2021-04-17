@@ -13,6 +13,7 @@ import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('project')
 export class ProjectController {
@@ -20,6 +21,7 @@ export class ProjectController {
 
   @Post()
   @UseGuards(AuthGuard())
+  @ApiBearerAuth()
   create(@Body() createProjectDto: CreateProjectDto, @Request() req) {
     createProjectDto.createdBy = req.user.id;
     createProjectDto.updatedBy = req.user.id;
@@ -29,18 +31,21 @@ export class ProjectController {
 
   @Get()
   @UseGuards(AuthGuard())
+  @ApiBearerAuth()
   findAll() {
     return this.projectService.findAll();
   }
 
   @Get(':id')
   @UseGuards(AuthGuard())
+  @ApiBearerAuth()
   findOne(@Param('id') id: string) {
     return this.projectService.findOne(+id);
   }
 
   @Patch(':id')
   @UseGuards(AuthGuard())
+  @ApiBearerAuth()
   update(
     @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
@@ -53,6 +58,7 @@ export class ProjectController {
 
   @Delete(':id')
   @UseGuards(AuthGuard())
+  @ApiBearerAuth()
   remove(@Param('id') id: string) {
     return this.projectService.remove(+id);
   }
