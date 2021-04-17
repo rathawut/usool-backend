@@ -38,6 +38,12 @@ model User {
   authPassword AuthPassword?
   accessTokens AccessToken[]
 
+  createdProjectCategories ProjectCategory[] @relation("createdByInProjectCategory")
+  updatedProjectCategories ProjectCategory[] @relation("updatedByInProjectCategory")
+
+  createdProjectTags ProjectTag[] @relation("createdByInProjectTag")
+  updatedProjectTags ProjectTag[] @relation("updatedByInProjectTag")
+
   createdProjects Project[] @relation("createdByInProject")
   updatedProjects Project[] @relation("updatedByInProject")
 
@@ -97,6 +103,58 @@ model AccessToken {
   @@map("access_token")
 }
 
+enum ProjectCategoryStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+model ProjectCategory {
+  id          Int                   @id @default(autoincrement())
+  name        String                @unique @db.VarChar(255)
+  description String?
+  weight      Int?
+  status      ProjectCategoryStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy Int
+  updatedBy Int
+
+  creator User @relation(name: "createdByInProjectCategory", fields: [createdBy], references: [id])
+  updater User @relation(name: "updatedByInProjectCategory", fields: [updatedBy], references: [id])
+
+  projects Project[]
+
+  @@map("project_category")
+}
+
+enum ProjectTagStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+model ProjectTag {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique @db.VarChar(255)
+  description String?
+  weight      Int?
+  status      ProjectTagStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy Int
+  updatedBy Int
+
+  creator User @relation(name: "createdByInProjectTag", fields: [createdBy], references: [id])
+  updater User @relation(name: "updatedByInProjectTag", fields: [updatedBy], references: [id])
+
+  projects ProjectTagOnProject[]
+
+  @@map("project_tag")
+}
+
 enum ProjectStatus {
   ACTIVE
   INACTIVE
@@ -105,8 +163,10 @@ enum ProjectStatus {
 
 model Project {
   id          Int           @id @default(autoincrement())
+  categoryId  Int
   name        String        @unique @db.VarChar(255)
   description String?
+  weight      Int?
   status      ProjectStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
@@ -114,12 +174,26 @@ model Project {
   createdBy Int
   updatedBy Int
 
+  category ProjectCategory @relation(fields: [categoryId], references: [id])
+
   creator User @relation(name: "createdByInProject", fields: [createdBy], references: [id])
   updater User @relation(name: "updatedByInProject", fields: [updatedBy], references: [id])
 
   texts Text[]
+  tags  ProjectTagOnProject[]
 
   @@map("project")
+}
+
+model ProjectTagOnProject {
+  project   Project    @relation(fields: [projectId], references: [id])
+  projectId Int
+  tag       ProjectTag @relation(fields: [tagId], references: [id])
+  tagId     Int
+  weight    Int?
+
+  @@id([projectId, tagId])
+  @@map("project_tag_on_project")
 }
 
 enum TextStatus {

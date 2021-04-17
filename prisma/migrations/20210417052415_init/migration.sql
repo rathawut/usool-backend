@@ -8,6 +8,12 @@ CREATE TYPE "AuthStrategy" AS ENUM ('PASSWORD');
 CREATE TYPE "AccessTokenStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DELETED');
 
 -- CreateEnum
+CREATE TYPE "ProjectCategoryStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DELETED');
+
+-- CreateEnum
+CREATE TYPE "ProjectTagStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DELETED');
+
+-- CreateEnum
 CREATE TYPE "ProjectStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DELETED');
 
 -- CreateEnum
@@ -78,10 +84,42 @@ CREATE TABLE "access_token" (
 );
 
 -- CreateTable
-CREATE TABLE "project" (
+CREATE TABLE "project_category" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "description" TEXT,
+    "weight" INTEGER,
+    "status" "ProjectCategoryStatus" NOT NULL DEFAULT E'ACTIVE',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" INTEGER NOT NULL,
+    "updatedBy" INTEGER NOT NULL,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "project_tag" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "description" TEXT,
+    "weight" INTEGER,
+    "status" "ProjectTagStatus" NOT NULL DEFAULT E'ACTIVE',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" INTEGER NOT NULL,
+    "updatedBy" INTEGER NOT NULL,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "project" (
+    "id" SERIAL NOT NULL,
+    "categoryId" INTEGER NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "description" TEXT,
+    "weight" INTEGER,
     "status" "ProjectStatus" NOT NULL DEFAULT E'ACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -89,6 +127,15 @@ CREATE TABLE "project" (
     "updatedBy" INTEGER NOT NULL,
 
     PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "project_tag_on_project" (
+    "projectId" INTEGER NOT NULL,
+    "tagId" INTEGER NOT NULL,
+    "weight" INTEGER,
+
+    PRIMARY KEY ("projectId","tagId")
 );
 
 -- CreateTable
@@ -150,6 +197,12 @@ CREATE UNIQUE INDEX "auth_password_userId_unique" ON "auth_password"("userId");
 CREATE UNIQUE INDEX "access_token.token_unique" ON "access_token"("token");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "project_category.name_unique" ON "project_category"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "project_tag.name_unique" ON "project_tag"("name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "project.name_unique" ON "project"("name");
 
 -- AddForeignKey
@@ -159,10 +212,31 @@ ALTER TABLE "auth_password" ADD FOREIGN KEY ("userId") REFERENCES "user"("id") O
 ALTER TABLE "access_token" ADD FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "project_category" ADD FOREIGN KEY ("createdBy") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "project_category" ADD FOREIGN KEY ("updatedBy") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "project_tag" ADD FOREIGN KEY ("createdBy") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "project_tag" ADD FOREIGN KEY ("updatedBy") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "project" ADD FOREIGN KEY ("categoryId") REFERENCES "project_category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "project" ADD FOREIGN KEY ("createdBy") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "project" ADD FOREIGN KEY ("updatedBy") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "project_tag_on_project" ADD FOREIGN KEY ("projectId") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "project_tag_on_project" ADD FOREIGN KEY ("tagId") REFERENCES "project_tag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "text" ADD FOREIGN KEY ("projectId") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
